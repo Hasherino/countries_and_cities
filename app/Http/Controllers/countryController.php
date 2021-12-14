@@ -14,70 +14,60 @@ class countryController extends Controller
                               search($request->search)->order($request->sort)->paginate(10);
 
         if (count($countries) != 0) {
-            return response()->json($countries);
+            return response($countries, 200);
         } else {
-            return 404;
+            return response("Not found", 404);
         }
     }
 
     public function show($id)
     {
-        return response()->json(country::findOrFail($id));
+        $country = country::find($id);
+        if ($country == null) {
+            return response("Not Found", 404);
+        } else {
+            return response($country, 200);
+        }
     }
 
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required',
-            'area' => 'required',
-            'population' => 'required',
-            'phone_code' => 'required'
-        ]);
+        $validator = Validator::make($request->all(), $this->rules());
 
         if ($validator->fails()) {
-            return 400;
+            return response("Missing parameters", 400);
         }
 
-        $newCountry = country::create([
-            'name' => $request->name,
-            'area' => $request->area,
-            'population' => $request->population,
-            'phone_code' => $request->phone_code,
-        ]);
+        $newCountry = country::create($request->all());
 
         $newCountry->save();
 
-        return 201;
+        return response("Country created", 201);
     }
 
     public function storeFile(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->file(), [
             'file' => 'required|mimes:json'
         ]);
 
+        if ($validator->fails()) {
+            return response("Bad file", 400);
+        }
+
         $file = json_decode(file_get_contents($request->file), true);
-        $newCountries = array();
 
         foreach ($file['countries'] as $country) {
             $validator = Validator::make($country, $this->rules());
 
             if ($validator->fails()) {
-                return 400;
+                return response("Missing parameters", 400);
             }
 
-            $newCountry = country::create([
-                'name' => $country['name'],
-                'area' => $country['area'],
-                'population' => $country['population'],
-                'phone_code' => $country['phone_code'],
-            ]);
-
-        $newCountry->save();
-        $newCountries[] = $newCountry;
+            country::create($country)->save();
         }
 
-        return 201;
+        return response("Country/Countries created", 201);
     }
 
     public function update(Request $request, $id)
@@ -85,17 +75,14 @@ class countryController extends Controller
         $validator = Validator::make($request->all(), $this->rules());
 
         if ($validator->fails()) {
-            return 400;
+            return response("Missing parameters", 400);
         }
 
         $country = country::findOrFail($id);
-        $country->name = $request->name;
-        $country->area = $request->area;
-        $country->population = $request->population;
-        $country->phone_code = $request->phone_code;
+        $country->fill($request->all());
         $country->save();
 
-        return 200;
+        return response("Country updated", 200);
     }
 
     public function delete($id)
@@ -106,7 +93,7 @@ class countryController extends Controller
         }
         $country->delete();
 
-        return 200;
+        return response("Country deleted", 200);
     }
 
     public function rules() {

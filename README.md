@@ -113,6 +113,25 @@ Params:
 |---------|----------|----------------------------------------------------------------------|--------|
 |`file`   |.json file|.json file with the same parameters as the regular country POST method|true    |
 
+File structure example:
+```json
+{
+    "countries": [
+        {
+            "name": "Brazil",
+            "population": "100mil",
+            "area": "500000km2",
+            "phone_code": "+12"
+        },
+        {
+            "name": "Spain",
+            "population": "30mil",
+            "area": "100000km2",
+            "phone_code": "+15"
+        }
+    ]
+}
+```
 * Success response:
     * Code: 201 Created
 * Error response:
@@ -148,6 +167,28 @@ Params:
 |Parameter|Type      |Description                                                           |Required|
 |---------|----------|----------------------------------------------------------------------|--------|
 |`file`   |.json file|.json file with the same parameters as the regular country POST method|true    |
+
+File structure example:
+```json
+{
+    "cities": [
+        {
+            "name": "Vilnius",
+            "population": "1mil",
+            "area": "100km2",
+            "postal_code": "LT-10000",
+            "country_id": "1"
+        },
+        {
+            "name": "Kaunas",
+            "population": "0.5mil",
+            "area": "50km2",
+            "postal_code": "LT-20000",
+            "country_id": "1"
+        }
+    ]
+}
+```
 
 * Success response:
     * Code: 201 Created

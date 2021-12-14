@@ -14,73 +14,60 @@ class cityController extends Controller
                         search($request->search)->order($request->sort)->paginate(10);
 
         if (count($cities) != 0) {
-            return response()->json($cities);
+            return response($cities, 200);
         } else {
-            return 404;
+            return response("Not Found", 404);
         }
     }
 
     public function show($id)
     {
-        return response()->json(city::findOrFail($id));
+        $city = city::find($id);
+        if ($city == null) {
+            return response("Not Found", 404);
+        } else {
+            return response($city, 200);
+        }
     }
 
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required',
-            'area' => 'required',
-            'population' => 'required',
-            'postal_code' => 'required',
-            'country_id' => 'required'
-        ]);
+        $validator = Validator::make($request->all(), $this->rules());
 
         if ($validator->fails()) {
-            return 400;
+            return response("Missing parameters", 400);
         }
 
-        $newCity = city::create([
-            'name' => $request->name,
-            'area' => $request->area,
-            'population' => $request->population,
-            'postal_code' => $request->postal_code,
-            'country_id' => $request->country_id,
-        ]);
+        $newCity = city::create($request->all());
 
         $newCity->save();
 
-        return 201;
+        return response("City created", 201);
     }
 
     public function storeFile(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->file(), [
             'file' => 'required|mimes:json'
         ]);
 
+        if ($validator->fails()) {
+            return response("Bad file", 400);
+        }
+
         $file = json_decode(file_get_contents($request->file), true);
-        $newCities = array();
 
         foreach ($file['cities'] as $city) {
             $validator = Validator::make($city, $this->rules());
 
             if ($validator->fails()) {
-                return 400;
+                return response("Missing parameters", 400);
             }
 
-            $newCity = city::create([
-                'name' => $city['name'],
-                'area' => $city['area'],
-                'population' => $city['population'],
-                'postal_code' => $city['postal_code'],
-                'country_id' => $city['country_id']
-            ]);
-
-            $newCity->save();
-            $newCities[] = $newCity;
+            city::create($city)->save();
         }
 
-        return 201;
+        return response("City/Cities created", 201);
     }
 
     public function update($id, Request $request)
@@ -88,25 +75,21 @@ class cityController extends Controller
         $validator = Validator::make($request->all(), $this->rules());
 
         if ($validator->fails()) {
-            return 400;
+            return response("Missing parameters", 400);
         }
 
         $city = city::findOrFail($id);
-        $city->name = $request->name;
-        $city->area = $request->area;
-        $city->population = $request->population;
-        $city->postal_code = $request->postal_code;
-        $city->country_id = $request->country_id;
+        $city->fill($request->all());
         $city->save();
 
-        return 200;
+        return response("City updated", 200);
     }
 
     public function delete($id)
     {
         city::findOrFail($id)->delete();
 
-        return 200;
+        return response("City deleted", 200);
     }
 
     public function rules() {
