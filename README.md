@@ -6,6 +6,7 @@
 * Edit .env file to match your server configuration
 * Use `php artisan migrate` to create the database tables
 * Use `php artisan DB:seed` to populate the tables.
+* Use `php artisan key:generate` to generate the APP_KEY value for .env file
 * Use `php artisan serve` to launch the API server.
 
 ## Usage
